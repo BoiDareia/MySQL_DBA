@@ -1,0 +1,20 @@
+# id : identificador unico para a escolha no menu
+# description  : descricao do ambiente
+# type         : tipo de configuracao, valores possiveis (admin|client)
+# instancename : nome da instancia
+# mysqldir     : pasta base dos binarios mysql
+# mysqlhome    : pasta onde se encontra o my.cnf
+# hostname     : hostname / ip do servidor que aloja a instancia (vazio implica usar os valores em my.cnf)
+# port         : porto tcp onde o cluster escuta ligacoes (vazio implica usar os valores em my.cnf)
+#
+#id|description|type|instancename|basedir|datadir|hostname|port
+x|my marquins (tcp)|admin|marquins|/mysql/basedir/5.7.22|/mysql/marquins/datafiles/||
+1|motor0 PRIM|admin|motor0|/mysql/basedir/5.5.54|/mysql/proj_testes/motor0/||
+2|motor1|admin|motor1|/mysql/basedir/5.7.19|/mysql/proj_testes/motor1/||
+3|motor2|admin|motor2|/mysql/basedir/5.7.19|/mysql/proj_testes/motor2/||
+4|motor3 REPL|admin|motor3|/mysql/basedir/5.5.54|/mysql/proj_testes/motor3/||
+5|instbeta|admin|instbeta|/mysql/basedir/5.7.19|/mysql/proj_testes/instbeta/||
+10|wallet_prd|admin|wallet_prd|/mysql/basedir/5.5.54|/mysql/proj_testes/wallet_prd/||
+11|teste_data|admin|teste_data|/mysql/basedir/5.7.19|/mysql/proj_testes/teste_data/||
+12|gae_pt_gate|admin|gae_pt_gate|/mysql/basedir/5.1.54|/mysql/proj_testes/gae_pt_gate/||
+13|teste|admin|teste|/mysql/basedir/5.6.14|/mysql/proj_testes/teste/||

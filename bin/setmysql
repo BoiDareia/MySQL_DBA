@@ -1,0 +1,90 @@
+## Ficheiro para ser sourced e preparar ambiente postgresql
+#  Assume que a diretoria de scripts gbd se encontra na PATH
+
+# L_GBD_TYPE     : Tipo de ambiente: admin, client
+# L_GBD_INSTANCE  : Nome do cluster/instancia postgresql
+# L_GBD_INSTALLDIR  : Diretoria base da instalacao dos binarios postgresl
+# L_GBD_MYHOME   : Diretoria base para os ficheiros de dados da instancia/cluster
+# L_GBD_HOST      : Endereco/nome da maquina da instancia postgresql
+# L_GBD_PORT      : Porto/Ficheiro de comunicacao
+
+# GBD_SILENT_SETGBD : Controla se deve haver menos output
+
+## Source funcoes e variaveis
+. utilgbd
+. envmysql
+
+## Se GBD_SILENT_SETGBD nao estiver ser, colocar a zero
+export GBD_SILENT_SETGBD=${GBD_SILENT_SETGBD:=0}
+
+## Verificar se setmysql foi chamado ja com uma opcao
+if [ $# = 1 ]; then
+    L_ANSWER="$1"
+elif [ $# =  0 ]; then
+    ## setmysql foi chamado sem opcao, listar instancias configuradas
+    if [ "${GBD_SILENT_SETGBD}" = "0" ]; then 
+        cat <<EOF!
+
+
+
+
+
+
+
+
+  ======== Setting MySQL environment ========
+
+EOF!
+        ## Ler ficheiro com lista de instancias (GBD_SERVER_LIST_FILE esta definido pelo script envpg)
+        ## Remove linhas comecadas por espacos, tabs e cardinal ou remove tudo depois do cardinal
+        ## Remove linhas "vazias"
+        sed -e 's/[[:blank:]]*#.*// ; /^[[:blank:]]*$/d' "${GBD_SERVER_LIST_FILE}" |
+            while IFS="|" read -r L_OPTION L_DESC L_GBD_TYPE L_GBD_INSTANCE L_GBD_INSTALLDIR L_GBD_MYHOME L_GBD_HOST L_GBD_PORT; do
+                # Unset MYSQL_HOME when calling mysqld to avoid parsing the instance my.cnf file
+                printf "  Enter %s to set environment for %s (MySQL %s)\n" "${L_OPTION}" "${L_DESC}" $(MYSQL_HOME= "${L_GBD_INSTALLDIR}/bin/mysqld" --version | awk '{print $3}')
+            done
+        cat <<EOF!
+
+
+  To quit without choosing any option enter 'q'
+
+  Note: For environment switch execute '. setmysql [option]'
+
+EOF!
+    fi
+    printf "  Enter an option : "
+    read L_ANSWER
+fi
+
+## Se houver um valor na resposta, verificar 
+if [ ! -z "${L_ANSWER}" ]; then 
+    ## Verificar resposta
+    if [ "${L_ANSWER}" = "q" ] || [ "${L_ANSWER}" = "Q" ]; then
+        printf "  Exiting without choosing any option.\n"
+    else
+        ## Voltar a ler o ficheiro com lista de servidores (TODO: evitar nova leitura)
+        L_CHOICE_LINE=$(sed -e 's/[[:blank:]]*#.*// ; /^[[:blank:]]*$/d' "${GBD_SERVER_LIST_FILE}" | grep "^${L_ANSWER}|")
+        ## Verificar se ambiente escolhido corresponde a algum na lista
+        if [ ! -z "${L_CHOICE_LINE}" ]; then
+            ## Efetuar o unset de variaveis de um possivel ambiente anterior
+            unset_extra_gbd_vars
+            unset_gbd_vars
+            ## Efetuar o parse dos parametros do ambiente (usando uma HERE string <<< para evitar sub shell)
+            IFS='|' read -r L_OPTION L_DESC L_GBD_TYPE L_GBD_INSTANCE L_GBD_INSTALLDIR L_GBD_MYHOME L_GBD_HOST L_GBD_PORT <<<"${L_CHOICE_LINE}"
+            ## Efetuar o set de variaveis para o ambiente escolhido
+            set_gbd_vars "${L_GBD_INSTANCE}" "${L_GBD_INSTALLDIR}" "${L_GBD_MYHOME}" "${L_GBD_HOST}" "${L_GBD_PORT}"
+            set_extra_gbd_vars "${L_OPTION}"
+            if [ "${GBD_SILENT_SETGBD}" = "0" ]; then 
+                printf "\n\n  Welcome to %s @ %s (MySQL Version %s)\n\n" "${GBD_INSTANCE}" "${L_GBD_HOST:-local}" "${GBD_VERSION}"
+            fi
+        else
+            printf "  Unknown option.\n"
+            ## Usar false para colocar o exit status diferente de zero
+            false
+        fi
+    fi
+else
+    printf "  Invalid arguments.\n"
+    ## Usar false para colocar o exit status diferente de zero
+    false
+fi

@@ -1,0 +1,178 @@
+## Ficheiro para ser sourced e preparar ambiente mysql
+## Variaveis utilizadas pelos scripts
+GBD_ROOTDIR="/mysql"
+GBD_BASEDIR="${GBD_ROOTDIR}/basedir"
+export GBD_ROOTDIR
+export GBD_BASEDIR
+
+## Definicao de contatos para a alarmitica
+GBD_FROM_EMAIL="mysql"
+GBD_TO_EMAIL="dba-mysql-ptp@telecom.pt"
+export GBD_FROM_EMAIL
+export GBD_TO_EMAIL
+
+
+## Ficheiro com lista de instancias
+GBD_SERVER_LIST_FILE="${GBD_BASEDIR}/etc/server_list_mysql.lst"
+
+#---------------------------------------------------------------------------
+# Function: unset_gbd_vars
+# Efetuar o unset das variaveis de ambiente mysql
+#
+#---------------------------------------------------------------------------
+unset_gbd_vars()
+{
+    ## Remover diretoria de binarios mysql da PATH
+    for DIR in $(find ${GBD_BASEDIR}/mysql*/bin -maxdepth 0 -type d); do
+        path_remove "${DIR}"
+        export PATH
+    done
+    ## Fazer o mesmo para os links
+    for DIR in $(find ${GBD_BASEDIR}/[5-8].*/bin -maxdepth 0 -type d); do
+        path_remove "${DIR}"
+        export PATH
+    done
+
+    ## Remove diretoria de man pages mysql da MANPATH
+    for DIR in $(find ${GBD_BASEDIR}/mysql*/man -maxdepth 0 -type d); do
+        man_path_remove "${DIR}"
+        export MANPATH
+    done
+    ## Fazer o mesmo para os links
+    for DIR in $(find ${GBD_BASEDIR}/[5-8].*/man -maxdepth 0 -type d); do
+        man_path_remove "${DIR}"
+        export MANPATH
+    done
+
+    ## Variaveis de ambiente usadas pelo cliente/servidor mysql
+    unset MYSQL_HOST
+    unset MYSQL_TCP_PORT
+    unset MYSQL_UNIX_PORT
+    unset MYSQL_HOME
+    unset MYSQL_PWD
+    
+    ## Variaveis ambiente utilizadas pelos scrips GBD
+    unset GBD_INSTALLDIR
+    unset GBD_INSTANCE
+    unset GBD_VERSION
+
+    PS1='[\u@\h:\w] $ '
+}
+
+#---------------------------------------------------------------------------
+# Function: set_gbd_vars
+# Exportar variaveis
+# GBD_INSTANCE GBD_VERSION GBD_INSTALLDIR PGDATA GBD_HOST GBD_PORT
+#
+# Argumentos:
+# $1 - mysql instance name
+# $2 - mysql base install dir
+# $3 - mysql base my.cnf dir
+# $4 - mysql host
+# $5 - mysql port
+#
+#---------------------------------------------------------------------------
+set_gbd_vars()
+{
+    GBD_INSTANCE="$1"
+    export GBD_INSTANCE
+
+    ## Se queremos ligar por unix socket, nao pode haver variavel MYSQL_HOST
+    if [ ! -z "$4" ]; then
+        MYSQL_HOST="$4"
+        export MYSQL_HOST
+    fi
+
+    ## Pode ser porto ou ficheiro de unix socket
+    if [ ! -z "$5" ]; then
+        MYSQL_TCP_PORT="$5"
+        export MYSQL_TCP_PORT
+    fi
+
+    GBD_INSTALLDIR="$2"
+    export GBD_INSTALLDIR
+
+    # Ir buscar a versao antes de fazer set do MYSQL_HOME, para nao o mysqld
+    # nao fazer parse do my.cnf (vai tentar, mas ou nao existe ou eh minimo)
+    # e ser paranoico e fazer o "unset" do MYSQL_HOME na chamada do mysqld
+    GBD_VERSION=$(MYSQL_HOME= "${GBD_INSTALLDIR}/bin/mysqld" --version | awk '{print $3}')
+    export GBD_VERSION
+
+    ## export o MYSQL_HOME com o localizacao do my.cnf
+    if [ ! -z "$3" ]; then
+        MYSQL_HOME="$3"
+        export MYSQL_HOME
+    fi
+
+    ## Adicionar diretoria dos binarios mysql ah PATH (ni inicio para se sobrepor ao restante)
+    PATH="${GBD_INSTALLDIR}/bin:${PATH}"
+    export PATH
+
+    ## Adicionar diretoria dos ficheiros man mysql ah MANPATH
+    MANPATH="${GBD_INSTALLDIR}/man:${MANPATH}"
+    export PATH
+
+    PS1='[${GBD_INSTANCE}][\u@\h:\w] $ '
+}
+
+#---------------------------------------------------------------------------
+# Function: set_extra_gbd_vars
+# Exportar variaveis, com base no argumento passado
+# Em principo o argumento eh id do ambiente
+#
+# Recebe como argumentos:
+# $1 - id do ambiente
+#
+#---------------------------------------------------------------------------
+set_extra_gbd_vars()
+{
+    case "$1" in
+    XXX)        
+        ## exportar variaveis extra para ambiente XX
+        GBD_XX="xx"
+        export GBD_XX
+        ;;
+    YYY)
+        ## exportar variaveis extra para ambiente YY
+        GBD_YY="yy"
+        export GBD_YY
+        ;;
+    *)
+        ## variaveis extra para todos as ambientes
+        true
+        ;;
+    esac
+}
+
+#---------------------------------------------------------------------------
+# Efetuar o unset das variaveis de ambiente mysql
+#
+#---------------------------------------------------------------------------
+unset_extra_gbd_vars()
+{
+    ## Variaveis extra de ambiente mysql
+    true
+    #unset PGXX
+    #unset PGYY
+}
+
+#---------------------------------------------------------------------------
+# Function: get_gbd_admin_id_list
+# Devolver lista dos ids com configuracao admin, separados por espacos
+#
+#---------------------------------------------------------------------------
+get_gbd_admin_id_list()
+{
+    ## Ler ficheiro com lista de instancias (definido anteriormente envmysql)
+    ## Remove linhas comecadas por espacos, tabs e cardinal ou remove tudo depois do cardinal
+    ## Remove linhas "vazias"
+    L_SPACE=""
+    sed -e 's/[[:blank:]]*#.*// ; /^[[:blank:]]*$/d' "${GBD_SERVER_LIST_FILE}" |
+        while IFS="|" read -r L_OPTION L_DESC L_GBD_TYPE L_GBD_INSTANCE L_GBD_INSTALLDIR L_GBD_MYHOME L_GBD_HOST L_GBD_PORT; do
+            if [ "${L_GBD_TYPE}" = "admin" ]; then
+                printf "%s%s" "${L_SPACE}" "${L_OPTION}"
+            fi
+            L_SPACE=" "
+        done
+    printf "\n"
+}
