@@ -22,11 +22,11 @@ S_INSTANCE_NAME='INSTANCIA'
 S_MYSQL_AUTH_OPTION="--login-path=bck"
 S_MYSQL_FLUSH_BIN_LOGS="FLUSH BINARY LOGS"
 S_NETBACKUP_POLITICA="${S_HOSTNAME}_APPLICATION_UserBck"
-S_NETBACKUP_HOSTNAME="${S_HOSTNAME}.oam.ptlocal"
+S_NETBACKUP_HOSTNAME="${S_HOSTNAME}.com"
 S_BIN_LOG_DIR="/mysql/backups/binlogs"
 
-S_MYSQL_FROM="DBA MYSQL PTP <dba-mysql-ptp@telecom.pt>"
-S_MYSQL_TO="dba-mysql-ptp@telecom.pt"
+S_MYSQL_FROM="DBA MYSQL PTP <dba-mysql-ptp@telecom.com>"
+S_MYSQL_TO="dba-mysql-ptp@telecom.com"
 
 #---------------------------------------------------------------------------
 S_VAR_DATETIME=$(date -u +'%Y%m%dT%H%M%s')
