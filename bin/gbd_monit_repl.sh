@@ -168,9 +168,8 @@ HOST=$(hostname -s)
 # Nome do script
 S_PROGNAME="${0##*/}"
 # endereco de email para envio de alertas
-EMAIL_TO="dba-mysql-ptp@telecom.pt"
-#EMAIL_TO="eduardo-santana@telecom.pt"
-SMS_TO="927820521 962435252 963135033 932200218 962435252"
+EMAIL_TO="dba-mysql-ptp@telecom.com"
+SMS_TO="phone_number"
 
 # Criticidade para alerta OVO eh normal
 OPEN_SEV=4
