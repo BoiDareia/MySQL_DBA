@@ -123,3 +123,6 @@ A script that lets you automatically set environment variables according to the 
 
 ## bin/utilgbd
 It adds logging parameters to messages generate by the other scripts.
+
+## work/Migrating_MySQL.sql
+An example of a Logical Upgrade (from 5.5.x to 5.7x)
