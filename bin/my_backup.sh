@@ -47,8 +47,8 @@ S_BACKUP_MINIMUM_COMPRESSED_SIZE_KIB=1
 S_INSTANCE_NAME='INSTANCIA'
 S_MYSQL_AUTH_OPTION="--login-path=bck"
 
-S_MYSQL_FROM="DBA MYSQL PTP <dba-mysql-ptp@telecom.pt>"
-S_MYSQL_TO="dba-mysql-ptp@telecom.pt"
+S_MYSQL_FROM="DBA MYSQL PTP <dba-mysql-ptp@telecom.com>"
+S_MYSQL_TO="dba-mysql-ptp@telecom.com"
 
 #---------------------------------------------------------------------------
 S_DAY_YYYYMMDD=$(date -u +'%Y%m%d')
